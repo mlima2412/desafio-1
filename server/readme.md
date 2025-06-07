@@ -1,15 +1,15 @@
 # Estrutura
 
-- [ ] Usar o fastify
-- [ ] Usar o typescript
-- [ ] Usar o Postgress
-- [ ] Usar o Drizzle
-- [ ] Criar um docker-file
-- [ ] Usar o openapi para documentar e testar os endpoints
+- [x] Usar o fastify
+- [x] Usar o typescript
+- [x] Usar o Postgress
+- [x] Usar o Drizzle
+- [x] Criar um docker-file
+- [x] Usar o openapi para documentar e testar os endpoints
 
 # Regras de negócio
 
-- [ ] Deve ser possível criar um link
+- [x] Deve ser possível criar um link
   - [ ] Não deve ser possível criar um link com URL encurtada mal formatada
   - [ ] Não deve ser possível criar um link com URL encurtada já existente
 - [ ] Deve ser possível deletar um link

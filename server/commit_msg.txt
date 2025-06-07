@@ -1,0 +1,13 @@
+feat: Configurar servidor e funcionalidades iniciais
+
+- Atualizado .gitignore para incluir script auto_commit.sh
+- Adicionado configuração do workspace `server.code-workspace`
+- Documento de mensagem commit adicionado
+- Configuração inicial de autenticação JWT
+- Docker-compose configurado com PostgreSQL
+- Script SQL inicial para criação de banco de dados
+- Configuração de ORM with Drizzle
+- Configurações do package.json atualizadas para suporte a novas dependências
+- Adicionada infraestrutura e serviços para CRUD de links curtos
+- Implementadas rotas usando Fastify e documentação com OpenAPI
+- Suporte a CSV e outras funcionalidades auxiliares
