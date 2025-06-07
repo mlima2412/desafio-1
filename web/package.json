@@ -1,10 +1,9 @@
 {
-	"name": "server",
+	"name": "web",
 	"version": "1.0.0",
-	"description": "Desafio Fase 1 Pos360 (Server) - Rocketseat",
+	"description": "Desafio Fase 1 Pos360 (WEB) - Rocketseat",
 	"main": "index.js",
 	"scripts": {
-		"dev": "node --experimental-strip-types --watch --no-warnings src/infra/http/server.ts",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [],
