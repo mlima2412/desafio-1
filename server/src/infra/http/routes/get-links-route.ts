@@ -1,6 +1,7 @@
 import { create } from "domain";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { getLinks } from "../../../app/services/link-list.ts";
 
 export const getLinksRoute: FastifyPluginAsyncZod = async (app) => {
 	app.get(
@@ -11,16 +12,16 @@ export const getLinksRoute: FastifyPluginAsyncZod = async (app) => {
 				description:
 					"This endpoint retrieves a paginated list of all registered short links. Each link includes its original URL, short URL, number of clicks, and creation date.",
 				querystring: z.object({
-					page: z.coerce.number().int().min(1).default(1),
+					searchQuery: z.string().optional(),
 				}),
 				response: {
 					200: z
 						.object({
 							linkList: z.array(
 								z.object({
-									urlId: z.string().uuid(),
+									id: z.string().uuid(),
 									originalUrl: z.string().url(),
-									shortUrl: z.string().url(),
+									shortUrl: z.string(),
 									numberOfClicks: z.coerce.number().int(),
 									createdAt: z.coerce.date(),
 								})
@@ -30,8 +31,9 @@ export const getLinksRoute: FastifyPluginAsyncZod = async (app) => {
 				},
 			},
 		},
-		(request) => {
-			return { linkList: [] };
+		async (request) => {
+			const links = await getLinks(request.query);
+			return { linkList: Array.isArray(links) ? links : links.linkList };
 		}
 	);
 };

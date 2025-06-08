@@ -1,5 +1,8 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import { resolve } from "path";
 import { z } from "zod";
+import { resolveShortLink } from "../../../app/services/resolve-short-link.ts";
+import { HttpError } from "../../../app/services/errors/http-errors.ts";
 
 export const resolveLinkRoute: FastifyPluginAsyncZod = async (app) => {
 	app.get(
@@ -28,14 +31,24 @@ export const resolveLinkRoute: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (request, reply) => {
-			const { shortUrl } = request.params;
-			// aqui começa a lógica de resolução do link
-			// Exemplo fictício de resolução:
-			const record = { originalUrl: "https://google.com" }; // Substitua pela lógica real
-			if (record && record.originalUrl) {
-				await reply.redirect(record.originalUrl), 302;
-			} else {
-				await reply.status(404).send({ message: "Link not found" });
+			console.log("Resolving short link:", request.params.shortUrl);
+			console.log("Request params:", request.params);
+			// Aqui você deve chamar o service que resolve o link curto
+			try {
+				const { shortUrl } = request.params;
+				const originalUrl = await resolveShortLink(shortUrl);
+				console.log(`Redirecting to original URL: ${originalUrl}`);
+				//await reply.redirect(originalUrl), 302;
+			} catch (error) {
+				console.error("Error resolving short link:", error);
+				if (error instanceof HttpError) {
+					return reply.status(error.statusCode).send({
+						message: error.message,
+					});
+				}
+				return reply.status(500).send({
+					message: "Internal Server Error",
+				});
 			}
 		}
 	);

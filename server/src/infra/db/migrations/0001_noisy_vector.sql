@@ -1,0 +1,1 @@
+ALTER TABLE "links" ADD COLUMN "number_of_clicks" integer DEFAULT 0;

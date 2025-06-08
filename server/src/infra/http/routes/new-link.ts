@@ -1,6 +1,7 @@
 import { createLink } from "../../../app/services/create-link.ts";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { HttpError } from "../../../app/services/errors/http-errors.ts";
 
 export const createLinkRoute: FastifyPluginAsyncZod = async (app) => {
 	app.post(
@@ -12,9 +13,15 @@ export const createLinkRoute: FastifyPluginAsyncZod = async (app) => {
 					"This endpoint allows you to create a new short link. You need to provide an original URL and an custom short URL. If the custom short URL is not provided, a unique one will be generated.",
 				body: z.object({
 					// originalUrl is required, must be a valid URL
-					originalUrl: z.string().url(),
-					// shortUrl is optional, if not provided, a unique one will be generated
-					shortUrl: z.string().url().max(20).nullable(),
+					originalUrl: z
+						.string()
+						.url()
+						.describe("Original URL to be shortened"),
+					shortUrl: z
+						.string()
+						.nullable()
+						.optional()
+						.describe("Custom short URL"),
 				}),
 				response: {
 					201: z.object({
@@ -47,7 +54,7 @@ export const createLinkRoute: FastifyPluginAsyncZod = async (app) => {
 				//const { originalUrl, shortUrl } = request.body;
 				const urlId = await createLink(
 					request.body.originalUrl,
-					request.body.shortUrl ?? null
+					request.body.shortUrl ?? ""
 				);
 				reply.status(201).send({
 					link: {
@@ -55,7 +62,11 @@ export const createLinkRoute: FastifyPluginAsyncZod = async (app) => {
 					},
 				});
 			} catch (error) {
-				console.log("Error creating link:", error);
+				if (error instanceof HttpError) {
+					return reply.status(error.statusCode).send({
+						message: error.message,
+					});
+				}
 				return reply.status(500).send({
 					message: "Internal Server Error",
 				});

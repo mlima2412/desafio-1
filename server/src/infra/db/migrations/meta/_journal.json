@@ -8,6 +8,13 @@
       "when": 1749323699419,
       "tag": "0000_fantastic_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749413700796,
+      "tag": "0001_noisy_vector",
+      "breakpoints": true
     }
   ]
 }
