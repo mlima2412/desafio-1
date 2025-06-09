@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { exportLinks } from "../../../app/services/export-links.ts";
 
 export const exportToCSVRoute: FastifyPluginAsyncZod = async (app) => {
 	app.get(
@@ -11,12 +12,15 @@ export const exportToCSVRoute: FastifyPluginAsyncZod = async (app) => {
 					"This endpoint allows you to export all registered links in CSV format. The response will include a link to download the CSV file.",
 
 				querystring: z.object({
-					page: z.coerce.number().int().min(1).default(1),
+					searchQuery: z
+						.string()
+						.optional()
+						.describe("Search query to filter links"),
 				}),
 				response: {
 					200: z
 						.object({
-							exportLink: z
+							reportUrl: z
 								.string()
 								.url()
 								.describe("Link to download the CSV file"),
@@ -25,8 +29,10 @@ export const exportToCSVRoute: FastifyPluginAsyncZod = async (app) => {
 				},
 			},
 		},
-		(request) => {
-			return { exportLink: "http://localhost:3333/links.csv" };
+		async (request, reply) => {
+			const { searchQuery } = request.query;
+			const reportURL = await exportLinks({ searchQuery });
+			reply.send(reportURL).code(200);
 		}
 	);
 };
