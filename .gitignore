@@ -1,3 +1,4 @@
 node_modules/
 .env
 server/auto_commit.sh
+server/commit_msg.txt
