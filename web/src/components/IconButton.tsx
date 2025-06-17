@@ -5,6 +5,7 @@ interface ButtonProps {
 	disabled?: boolean;
 	icon?: React.ReactNode;
 	onClick?: () => void;
+	reload?: boolean;
 }
 
 export function IconButton({
@@ -12,6 +13,7 @@ export function IconButton({
 	disabled = false,
 	onClick,
 	icon,
+	reload = false,
 }: ButtonProps) {
 	return (
 		<button
@@ -30,9 +32,7 @@ export function IconButton({
 			`}
 		>
 			{icon && (
-				<span className='flex items-center'>
-					{disabled ? <Spinner /> : icon}
-				</span>
+				<span className='flex items-center'>{reload ? <Spinner /> : icon}</span>
 			)}
 			{label && <span>{label}</span>}
 		</button>

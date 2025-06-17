@@ -13,13 +13,7 @@ const exportSearchQuery = z.object({
 
 type ExportSearchQuery = z.input<typeof exportSearchQuery>;
 
-type ExportLinks = {
-	reportUrl: string;
-};
-
-export async function exportLinks(
-	input: ExportSearchQuery
-): Promise<ExportLinks> {
+export async function exportLinks(input: ExportSearchQuery): Promise<string> {
 	const { searchQuery } = exportSearchQuery.parse(input);
 
 	const { sql, params } = db
@@ -68,7 +62,6 @@ export async function exportLinks(
 		csv,
 		uploadToStorageStream
 	);
-
 	const uploadToStorage = uploadFileToStorage({
 		contentType: "text/csv",
 		folder: "export",
@@ -77,6 +70,7 @@ export async function exportLinks(
 	});
 
 	const [{ url }] = await Promise.all([uploadToStorage, convertoToCSVPipeline]);
+	const fileName = url.split("/").pop(); // Pega a última parte após a "/"
 
-	return { reportUrl: url };
+	return fileName || "";
 }

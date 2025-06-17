@@ -20,10 +20,14 @@ export const exportToCSVRoute: FastifyPluginAsyncZod = async (app) => {
 				response: {
 					200: z
 						.object({
-							reportUrl: z
+							url: z
 								.string()
-								.url()
-								.describe("Link to download the CSV file"),
+								.describe("CSV filename on cloudeflare public bucket"),
+						})
+						.describe("Link to download the CSV file"),
+					500: z
+						.object({
+							error: z.string().describe("Failed to export links"),
 						})
 						.describe("Link to download the CSV file"),
 				},
@@ -31,8 +35,11 @@ export const exportToCSVRoute: FastifyPluginAsyncZod = async (app) => {
 		},
 		async (request, reply) => {
 			const { searchQuery } = request.query;
-			const reportURL = await exportLinks({ searchQuery });
-			reply.send(reportURL).code(200);
+			const fileName: string = await exportLinks({ searchQuery });
+			if (!fileName || fileName === "") {
+				return reply.status(500).send({ error: "Failed to export links" });
+			}
+			reply.status(200).send({ url: fileName });
 		}
 	);
 };

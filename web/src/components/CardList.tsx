@@ -11,6 +11,7 @@ import useAPI from "../hooks/useAPI";
 import type { CardDataType } from "./carddata";
 import useMessage from "../hooks/useMessage";
 import { useLoading } from "../hooks/useLoading";
+import { APIError } from "../error/APIError";
 
 type Props = {
 	reloadTrigger: boolean;
@@ -18,10 +19,32 @@ type Props = {
 
 export function CardList({ reloadTrigger }: Props) {
 	const { isLoading, setIsLoading } = useLoading();
+	const [reloading, setReloading] = useState(false);
+	const fileStoragePath = import.meta.env.VITE_CLOUDFLARE_PUBLIC_URL;
 
 	const [data, setData] = useState<CardDataType[]>([]); // Inicializa o estado para armazenar os dados
 	const { httpGet, httpDelete } = useAPI();
-	const { success } = useMessage();
+	const { success, fail } = useMessage();
+
+	async function handleCSVDownload() {
+		try {
+			setIsLoading(true);
+			setReloading(true);
+			const { url } = await httpGet("export-to-csv");
+			const a = document.createElement("a");
+			a.href = fileStoragePath + url;
+			a.download = url;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			success("CSV baixado com sucesso!");
+		} catch (error) {
+			fail("Ocorreu um erro ao baixar o CSV.");
+		} finally {
+			setIsLoading(false);
+			setReloading(false);
+		}
+	}
 
 	function handleCopy(originalUrl: string) {
 		navigator.clipboard
@@ -37,9 +60,8 @@ export function CardList({ reloadTrigger }: Props) {
 	async function handleDelete(id: string) {
 		try {
 			setIsLoading(true);
-			console.log("Excluindo link com ID:", id);
+			setReloading(true);
 			const response = await httpDelete("delete", { id });
-			console.log("Resposta da exclusão:", response);
 			setData((prevData) => prevData.filter((item) => item.id !== id));
 			success("Link excluído com sucesso!");
 		} catch (error) {
@@ -51,6 +73,7 @@ export function CardList({ reloadTrigger }: Props) {
 
 	async function fetchData() {
 		setIsLoading(true);
+		setReloading(true);
 		try {
 			const response = await httpGet("links");
 			setData(response.linkList);
@@ -58,6 +81,7 @@ export function CardList({ reloadTrigger }: Props) {
 			console.error("Erro ao buscar dados:", error);
 		} finally {
 			setIsLoading(false);
+			setReloading(false);
 		}
 	}
 
@@ -95,16 +119,17 @@ export function CardList({ reloadTrigger }: Props) {
 							weight='bold'
 						/>
 					}
-					disabled={isLoading}
+					reload={reloading}
+					disabled={isLoading || data.length === 0}
 					label='Baixar CSV'
 					onClick={() => {
-						console.log("Baixar CSV clicado");
+						handleCSVDownload();
 					}}
 				/>
 			</div>
 
-			<div className='min-w-[380px] min-h-[214px] max-h-[348px] md:min-w-[593px] md:min-h-[196px] md:max-h-[470px] overflow-y-auto px-4 py-4 bg-white rounded-b-lg'>
-				{!isLoading ? (
+			<div className='min-w-[430px] min-h-[214px] max-h-[348px] md:min-w-[593px] md:min-h-[196px] md:max-h-[470px] overflow-y-auto px-4 py-4 bg-white rounded-b-lg'>
+				{!reloading ? (
 					data.length > 0 ? (
 						// Renderiza os itens se houver dados
 						<div className='flex flex-col'>

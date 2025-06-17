@@ -36,10 +36,9 @@ export const resolveLinkRoute: FastifyPluginAsyncZod = async (app) => {
 		},
 		async (request, reply) => {
 			try {
-				console.log("Resolving short link:", request.params.shortUrl);
 				const { shortUrl } = request.params;
 				const originalUrl = await resolveShortLink(shortUrl);
-				console.log(`Redirecting to original URL: ${originalUrl}`);
+				`Redirecting to original URL: ${originalUrl}`;
 				// returnar o link para o front-end sem redirecionar. QUem redireciona é o front-end
 				return reply.status(200).send({
 					message: "Link resolved successfully",
