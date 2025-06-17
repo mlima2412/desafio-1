@@ -1,24 +1,26 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import useAPI from "../hooks/useAPI";
 
 export function Redirect() {
-	const { slug } = useParams();
+	const hasRun = useRef(false);
+	const { httpGet } = useAPI();
 	const navigate = useNavigate();
+	const { slug } = useParams();
 
 	useEffect(() => {
 		async function buscarUrlOriginal() {
+			if (hasRun.current) return;
+			hasRun.current = true;
 			try {
-				console.log("Buscando URL original para o slug:", slug);
-				const res = await fetch(`https://sua-api.com/${slug}`);
-				const data = await res.json();
+				const data = await httpGet(`resolve/${slug}`);
 
-				if (data?.url) {
-					window.location.href = data.url;
+				if (data?.originalUrl) {
+					window.location.href = data.originalUrl;
 				} else {
 					navigate("/404");
 				}
 			} catch (err) {
-				console.log("Erro ao buscar URL original para o slug:", slug);
 				navigate("/404");
 			}
 		}

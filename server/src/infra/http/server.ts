@@ -49,6 +49,8 @@ server.setErrorHandler((error, request, reply) => {
 // Alows any origin to access the server
 server.register(fastifyCors, {
 	origin: "*",
+	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+	credentials: false,
 });
 
 server.register(fastifySwagger, {

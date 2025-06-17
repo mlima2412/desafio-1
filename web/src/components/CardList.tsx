@@ -1,30 +1,189 @@
+import {
+	DownloadIcon,
+	LinkIcon,
+	CopyIcon,
+	TrashIcon,
+} from "@phosphor-icons/react";
+import { IconButton } from "./IconButton";
+import { useEffect, useState } from "react";
+import { Spinner } from "./Spinner";
+import useAPI from "../hooks/useAPI";
 import type { CardDataType } from "./carddata";
+import useMessage from "../hooks/useMessage";
+import { useLoading } from "../hooks/useLoading";
 
-interface CardListProps {
-	data: CardDataType[];
-}
+type Props = {
+	reloadTrigger: boolean;
+};
 
-export function CardList({ data }: CardListProps) {
+export function CardList({ reloadTrigger }: Props) {
+	const { isLoading, setIsLoading } = useLoading();
+
+	const [data, setData] = useState<CardDataType[]>([]); // Inicializa o estado para armazenar os dados
+	const { httpGet, httpDelete } = useAPI();
+	const { success } = useMessage();
+
+	function handleCopy(originalUrl: string) {
+		navigator.clipboard
+			.writeText(originalUrl)
+			.then(() => {
+				success("URL copiada para a área de transferência!");
+			})
+			.catch((err) => {
+				console.error("Erro ao copiar a URL:", err);
+			});
+	}
+
+	async function handleDelete(id: string) {
+		try {
+			setIsLoading(true);
+			console.log("Excluindo link com ID:", id);
+			const response = await httpDelete("delete", { id });
+			console.log("Resposta da exclusão:", response);
+			setData((prevData) => prevData.filter((item) => item.id !== id));
+			success("Link excluído com sucesso!");
+		} catch (error) {
+			console.error("Erro ao excluir o link:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	}
+
+	async function fetchData() {
+		setIsLoading(true);
+		try {
+			const response = await httpGet("links");
+			setData(response.linkList);
+		} catch (error) {
+			console.error("Erro ao buscar dados:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	}
+
+	useEffect(() => {
+		const handleFocus = () => {
+			fetchData(); // <- sua função de fetch dos links
+		};
+
+		window.addEventListener("focus", handleFocus);
+		return () => window.removeEventListener("focus", handleFocus);
+	}, [reloadTrigger]);
+
+	useEffect(() => {
+		fetchData();
+	}, [reloadTrigger]);
+
 	return (
-		<div className='min-w-[366px] min-h-[214px] max-h-[348px] md:min-w-[598px] md:max-h-[600px] overflow-y-auto gap-20 px-4 py-4 bg-gray-100 rounded-lg'>
-			<div className='flex flex-col gap-4'>
-				{data.map((item) => (
+		<div>
+			<div className='relative flex justify-between items-center p-4 bg-white rounded-t-lg'>
+				{isLoading && (
 					<div
-						key={item.id}
-						className='w-full bg-white shadow rounded-md p-4 min-h-[100px]'
-					>
-						<h3 className='text-blue_base font-medium'>{item.shortLink}</h3>
-						<p className='text-sm text-gray-600'>
-							brev.ly/{item.shortLink || "Sem descrição"}
-						</p>
-						<a
-							href={`/${item.shortLink}`}
-							className='text-blue-600 text-sm mt-2 inline-block'
-						>
-							Acessar
-						</a>
+						className='absolute top-0 left-0 w-full h-1 
+                 bg-gradient-to-r from-indigo-600 via-purple-400 to-indigo-600 
+                 bg-[length:200%_100%] bg-no-repeat 
+                 animate-loading-bar 
+                 rounded-t'
+					/>
+				)}
+				<span className='text-lg font-bold text-gray-600'>Meus Links</span>
+				<IconButton
+					icon={
+						<DownloadIcon
+							size={16}
+							color='#4B5563'
+							weight='bold'
+						/>
+					}
+					disabled={isLoading}
+					label='Baixar CSV'
+					onClick={() => {
+						console.log("Baixar CSV clicado");
+					}}
+				/>
+			</div>
+
+			<div className='min-w-[380px] min-h-[214px] max-h-[348px] md:min-w-[593px] md:min-h-[196px] md:max-h-[470px] overflow-y-auto px-4 py-4 bg-white rounded-b-lg'>
+				{!isLoading ? (
+					data.length > 0 ? (
+						// Renderiza os itens se houver dados
+						<div className='flex flex-col'>
+							{data.map((item) => (
+								<div
+									key={item.id}
+									className='flex flex-row py-2 items-center justify-between bg-white gap-2 flex-wrap border-y border-gray-200'
+								>
+									<div className='flex-1'>
+										<span className='text-blue_base font-medium'>
+											<a
+												href={`${window.location.origin}/${item.shortUrl}`}
+												target='_blank'
+												rel='noopener noreferrer'
+											>
+												brev.ly/{item.shortUrl}
+											</a>
+										</span>
+										<p className='text-sm text-gray-600'>
+											<a
+												href={`${item.originalUrl}`}
+												target='_blank'
+												rel='noopener noreferrer'
+											>
+												{item.originalUrl}
+											</a>
+										</p>
+									</div>
+
+									{/* Coluna 2: Acessos */}
+									<div className='text-sm text-gray-500 whitespace-nowrap'>
+										{item.numberOfClicks} acessos
+									</div>
+
+									{/* Coluna 3: Ícones */}
+									<div className='flex gap-0.5'>
+										<IconButton
+											icon={
+												<CopyIcon
+													size={16}
+													color='#4B5563'
+												/>
+											}
+											onClick={() => handleCopy(item.originalUrl)}
+										/>
+										<IconButton
+											icon={
+												<TrashIcon
+													size={16}
+													color='#4B5563'
+												/>
+											}
+											onClick={() => {
+												window.confirm(
+													`Tem certeza que deseja excluir o link ${item.shortUrl}?`
+												) && handleDelete(item.id);
+											}}
+										/>
+									</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<div className='flex flex-col justify-center items-center h-28'>
+							<LinkIcon
+								size={32}
+								color='text-gray-500'
+							/>
+							<span className='text-gray-500'>
+								AINDA NÃO HÁ LINKS CADASTRADOS
+							</span>
+						</div>
+					)
+				) : (
+					<div className='flex flex-col justify-center items-center h-28'>
+						<Spinner />
+						<span className='text-gray-500'>Aguarde, buscando links...</span>
 					</div>
-				))}
+				)}
 			</div>
 		</div>
 	);

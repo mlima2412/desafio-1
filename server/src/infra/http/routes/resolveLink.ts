@@ -17,9 +17,13 @@ export const resolveLinkRoute: FastifyPluginAsyncZod = async (app) => {
 						.describe("Unique identifier of the link to resolve"),
 				}),
 				response: {
-					302: z
+					200: z
 						.object({
 							message: z.string().describe("Link resolved successfully"),
+							originalUrl: z
+								.string()
+								.url()
+								.describe("The original URL resolved from the short link"),
 						})
 						.describe("Link resolved successfully"),
 					404: z
@@ -31,16 +35,17 @@ export const resolveLinkRoute: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (request, reply) => {
-			console.log("Resolving short link:", request.params.shortUrl);
-			console.log("Request params:", request.params);
-			// Aqui você deve chamar o service que resolve o link curto
 			try {
+				console.log("Resolving short link:", request.params.shortUrl);
 				const { shortUrl } = request.params;
 				const originalUrl = await resolveShortLink(shortUrl);
 				console.log(`Redirecting to original URL: ${originalUrl}`);
-				//await reply.redirect(originalUrl), 302;
+				// returnar o link para o front-end sem redirecionar. QUem redireciona é o front-end
+				return reply.status(200).send({
+					message: "Link resolved successfully",
+					originalUrl: originalUrl,
+				});
 			} catch (error) {
-				console.error("Error resolving short link:", error);
 				if (error instanceof HttpError) {
 					return reply.status(error.statusCode).send({
 						message: error.message,

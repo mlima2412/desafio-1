@@ -4,7 +4,6 @@ import { schema } from "../../infra/db/schemas/index.ts";
 import { HttpError } from "../../app/services/errors/http-errors.ts";
 
 export async function resolveShortLink(shortUrl: string): Promise<string> {
-	console.log("Buscando por:", shortUrl);
 	const result = await db
 		.select({
 			id: schema.links.id,

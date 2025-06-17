@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
+import img404 from "../assets/404.svg";
 
 export function NotFound() {
 	const navigate = useNavigate();
 
 	return (
-		<div style={{ textAlign: "center", marginTop: 100 }}>
+		<div className='flex flex-col justify-center items-center h-screen text-center'>
 			<img
-				src='/assets/404.svg'
+				src={img404}
 				alt='Página não encontrada'
 				style={{ width: "300px", marginBottom: "20px" }}
 			/>

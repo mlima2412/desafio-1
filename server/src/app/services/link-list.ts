@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { db, pg } from "../../infra/db/index.ts";
 import { schema } from "../../infra/db/schemas/index.ts";
+import { desc } from "drizzle-orm";
 
 const getLinksInput = z.object({
 	searchQuery: z.string().optional(),
@@ -40,6 +41,7 @@ async function getLinkListFromDB(): Promise<GetLinksOutput["linkList"]> {
 			createdAt: schema.links.createdAt,
 		})
 		.from(schema.links)
+		.orderBy(desc(schema.links.createdAt))
 		.toSQL();
 
 	const cursor = pg.unsafe(sql, params as string[]).cursor(2);

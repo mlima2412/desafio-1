@@ -5,13 +5,13 @@ import { HttpError } from "../../../app/services/errors/http-errors.ts";
 
 export const deleteLinkRoute: FastifyPluginAsyncZod = async (app) => {
 	app.delete(
-		"/link/:id",
+		"/delete",
 		{
 			schema: {
 				summary: "Delete a short link",
 				description:
 					"Deletes a short link by its unique identifier. This operation removes the link from the database.",
-				params: z.object({
+				body: z.object({
 					id: z
 						.string()
 						.uuid()
@@ -33,7 +33,7 @@ export const deleteLinkRoute: FastifyPluginAsyncZod = async (app) => {
 		},
 		async (request, reply) => {
 			try {
-				const id = request.params.id;
+				const id = request.body.id;
 				const result = await deleteShortLink(id);
 				if (result === false) {
 					return reply.status(404).send({
