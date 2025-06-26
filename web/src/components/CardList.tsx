@@ -173,7 +173,7 @@ export function CardList({ reloadTrigger }: Props) {
 													color='#4B5563'
 												/>
 											}
-											onClick={() => handleCopy(item.originalUrl)}
+											onClick={() => handleCopy(item.shortUrl)}
 										/>
 										<IconButton
 											icon={
